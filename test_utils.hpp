@@ -1,14 +1,15 @@
-#pragma open
+#pragma once
 
 #include "common_defs.hpp"
 
+#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fstream>
 
 class test_utils {
   private:
     std::string dir;
+    void print_name(const char *name);
 
   public:
     test_utils() = default;
@@ -18,14 +19,22 @@ class test_utils {
     void file_read_float(const char *filename, fixed_float *data, int size);
     void file_read_float(const char *filename, fixed_double *data, int size);
     void file_read_complex(const char *filename_re, const char *filename_im,
-                           std::complex<fixed_double> *data, int size);
+                           complex_float *data, int size);
+    void file_read_complex(const char *filename_re, const char *filename_im,
+                           complex_double *data, int size);
 
     void print_float(const char *name, float *data, int size);
     void print_float(const char *name, fixed_float *data, int size);
     void print_float(const char *name, fixed_double *data, int size);
-    void print_complex(const char *name, std::complex<fixed_double> *data,
-                       int size);
+    void print_complex(const char *name, complex_float *data, int size);
+    void print_complex(const char *name, complex_double *data, int size);
 };
+
+void test_utils::print_name(const char *name) {
+    printf("========================================\n");
+    printf("%s:\n", name);
+    printf("========================================\n");
+}
 
 void test_utils::file_read_float(const char *filename, float *data, int size) {
     std::ifstream file(filename);
@@ -43,7 +52,6 @@ void test_utils::file_read_float(const char *filename, float *data, int size) {
         printf("Failed to open file: %s\n", filename);
     }
 }
-
 void test_utils::file_read_float(const char *filename, fixed_float *data,
                                  int size) {
     std::ifstream file(filename);
@@ -62,7 +70,6 @@ void test_utils::file_read_float(const char *filename, fixed_float *data,
         printf("Failed to open file: %s\n", filename);
     }
 }
-
 void test_utils::file_read_float(const char *filename, fixed_double *data,
                                  int size) {
     std::ifstream file(filename);
@@ -81,10 +88,9 @@ void test_utils::file_read_float(const char *filename, fixed_double *data,
         printf("Failed to open file: %s\n", filename);
     }
 }
-
 void test_utils::file_read_complex(const char *filename_re,
                                    const char *filename_im,
-                                   std::complex<fixed_double> *data, int size) {
+                                   complex_double *data, int size) {
     std::ifstream file_re(filename_re);
     std::ifstream file_im(filename_im);
     if (file_re.is_open() && file_im.is_open()) {
@@ -106,37 +112,37 @@ void test_utils::file_read_complex(const char *filename_re,
 }
 
 void test_utils::print_float(const char *name, float *data, int size) {
-	printf("========================================\n");
-    printf("%s:\n", name);
-    printf("========================================\n");
+    print_name(name);
     for (int i = 0; i < size; i++) {
         printf("%f\n", data[i]);
     }
     printf("\n");
 }
 void test_utils::print_float(const char *name, fixed_float *data, int size) {
-	printf("========================================\n");
-    printf("%s:\n", name);
-    printf("========================================\n");
+    print_name(name);
     for (int i = 0; i < size; i++) {
         printf("%f\n", (float)data[i]);
     }
     printf("\n");
 }
 void test_utils::print_float(const char *name, fixed_double *data, int size) {
-	printf("========================================\n");
-    printf("%s:\n", name);
-    printf("========================================\n");
+    print_name(name);
     for (int i = 0; i < size; i++) {
         printf("%f\n", (float)data[i]);
     }
     printf("\n");
 }
-void test_utils::print_complex(const char *name,
-                               std::complex<fixed_double> *data, int size) {
-    printf("========================================\n");
-    printf("%s:\n", name);
-    printf("========================================\n");
+void test_utils::print_complex(const char *name, complex_float *data,
+                               int size) {
+    print_name(name);
+    for (int i = 0; i < size; i++) {
+        printf("%f + i%f\n", (float)data[i].real(), (float)data[i].imag());
+    }
+    printf("\n");
+}
+void test_utils::print_complex(const char *name, complex_double *data,
+                               int size) {
+    print_name(name);
     for (int i = 0; i < size; i++) {
         printf("%f + i%f\n", (float)data[i].real(), (float)data[i].imag());
     }

@@ -1,4 +1,4 @@
-#pragma open
+#pragma once
 
 #include "ap_fixed.h"
 #include <complex>
@@ -14,6 +14,21 @@ typedef ap_fixed<64, 32> fixed_double;
 
 typedef std::complex<fixed_float> complex_float;
 typedef std::complex<fixed_double> complex_double;
+
+struct sModelArgs {
+    fixed_float alfa0;
+    fixed_double freq0;
+    fixed_float c2;
+    fixed_float n;
+    fixed_float ro2;
+    fixed_float h;
+};
+
+struct sModelParams {
+    fixed_double fsampl;
+    fixed_float c1;
+    fixed_float ro1;
+};
 
 #define TEST_DIR "D:/Magistras/Magistro projektas/Matlab_realization/Raw/test/TransferFunction/"
 #define ARGS_DIR TEST_DIR "OriginalArgs.txt"
