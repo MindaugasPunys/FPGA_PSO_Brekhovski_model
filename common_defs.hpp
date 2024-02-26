@@ -10,9 +10,12 @@
 
 typedef ap_fixed<32, 16> fixed_float;
 typedef ap_fixed<48, 32> fixed_big_float;
+typedef ap_fixed<64, 48> fixed_big_big_float;
 typedef ap_fixed<64, 32> fixed_double;
 
 typedef std::complex<fixed_float> complex_float;
+typedef std::complex<fixed_big_float> complex_big_float;
+typedef std::complex<fixed_big_big_float> complex_big_big_float;
 typedef std::complex<fixed_double> complex_double;
 
 struct sModelArgs {
