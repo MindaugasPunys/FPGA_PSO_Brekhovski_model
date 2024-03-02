@@ -35,27 +35,27 @@
 /* ================================================================= */
 /* TYPEDEFS */
 /* ================================================================= */
-typedef ap_fixed<32, 16> fixed_float;
-typedef ap_fixed<48, 32> fixed_big_float;
-typedef ap_fixed<64, 48> fixed_big_big_float;
-typedef ap_fixed<64, 32> fixed_double;
+typedef ap_fixed<32, 16> ap_fixed_32p16; // ap_fixed_32p16
+typedef ap_fixed<48, 32> ap_fixed_48p32; // ap_fixed_48p32
+typedef ap_fixed<64, 48> ap_fixed_64p48; // ap_fixed_64p48
+typedef ap_fixed<64, 32> ap_fixed_64p32; // ap_fixed_64p32
 
-typedef std::complex<fixed_float> complex_float;
-typedef std::complex<fixed_big_float> complex_big_float;
-typedef std::complex<fixed_big_big_float> complex_big_big_float;
-typedef std::complex<fixed_double> complex_double;
+typedef std::complex<ap_fixed_32p16> ap_complex_32p16; // ap_complex_32p16
+typedef std::complex<ap_fixed_48p32> ap_complex_48p32; // ap_complex_48p32
+typedef std::complex<ap_fixed_64p48> ap_complex_64p48; // ap_complex_64p48
+typedef std::complex<ap_fixed_64p32> ap_complex_64p32; // ap_complex_64p32
 
 struct sModelArgs {
-    fixed_float alfa0;
-    fixed_double freq0;
-    fixed_float c2;
-    fixed_float n;
-    fixed_float ro2;
-    fixed_float h;
+    ap_fixed_32p16 alfa0;
+    ap_fixed_64p32 freq0;
+    ap_fixed_32p16 c2;
+    ap_fixed_32p16 n;
+    ap_fixed_32p16 ro2;
+    ap_fixed_32p16 h;
 };
 
 struct sModelParams {
-    fixed_double fsampl;
-    fixed_float c1;
-    fixed_float ro1;
+    ap_fixed_64p32 fsampl;
+    ap_fixed_32p16 c1;
+    ap_fixed_32p16 ro1;
 };

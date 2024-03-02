@@ -16,18 +16,18 @@ class test_utils {
     ~test_utils() = default;
 
     void file_read_float(const char *filename, float *data, int size);
-    void file_read_float(const char *filename, fixed_float *data, int size);
-    void file_read_float(const char *filename, fixed_double *data, int size);
+    void file_read_float(const char *filename, ap_fixed_32p16 *data, int size);
+    void file_read_float(const char *filename, ap_fixed_64p32 *data, int size);
     void file_read_complex(const char *filename_re, const char *filename_im,
-                           complex_float *data, int size);
+                           ap_complex_32p16 *data, int size);
     void file_read_complex(const char *filename_re, const char *filename_im,
-                           complex_double *data, int size);
+                           ap_complex_64p32 *data, int size);
 
     void print_float(const char *name, float *data, int size);
-    void print_float(const char *name, fixed_float *data, int size);
-    void print_float(const char *name, fixed_double *data, int size);
-    void print_complex(const char *name, complex_float *data, int size);
-    void print_complex(const char *name, complex_double *data, int size);
+    void print_float(const char *name, ap_fixed_32p16 *data, int size);
+    void print_float(const char *name, ap_fixed_64p32 *data, int size);
+    void print_complex(const char *name, ap_complex_32p16 *data, int size);
+    void print_complex(const char *name, ap_complex_64p32 *data, int size);
 };
 
 void test_utils::print_name(const char *name) {
@@ -52,15 +52,15 @@ void test_utils::file_read_float(const char *filename, float *data, int size) {
         printf("Failed to open file: %s\n", filename);
     }
 }
-void test_utils::file_read_float(const char *filename, fixed_float *data,
+void test_utils::file_read_float(const char *filename, ap_fixed_32p16 *data,
                                  int size) {
     std::ifstream file(filename);
     if (file.is_open()) {
         for (int i = 0; i < size; i++) {
             if (file >> data[i]) {
-                // Successfully read a fixed_float value from the file
+                // Successfully read a ap_fixed_32p16 value from the file
             } else {
-                printf("Failed to read fixed_float value from file: %s\n",
+                printf("Failed to read ap_fixed_32p16 value from file: %s\n",
                        filename);
                 return;
             }
@@ -70,15 +70,15 @@ void test_utils::file_read_float(const char *filename, fixed_float *data,
         printf("Failed to open file: %s\n", filename);
     }
 }
-void test_utils::file_read_float(const char *filename, fixed_double *data,
+void test_utils::file_read_float(const char *filename, ap_fixed_64p32 *data,
                                  int size) {
     std::ifstream file(filename);
     if (file.is_open()) {
         for (int i = 0; i < size; i++) {
             if (file >> data[i]) {
-                // Successfully read a fixed_double value from the file
+                // Successfully read a ap_fixed_64p32 value from the file
             } else {
-                printf("Failed to read fixed_double value from file: %s\n",
+                printf("Failed to read ap_fixed_64p32 value from file: %s\n",
                        filename);
                 return;
             }
@@ -90,14 +90,14 @@ void test_utils::file_read_float(const char *filename, fixed_double *data,
 }
 void test_utils::file_read_complex(const char *filename_re,
                                    const char *filename_im,
-                                   complex_double *data, int size) {
+                                   ap_complex_64p32 *data, int size) {
     std::ifstream file_re(filename_re);
     std::ifstream file_im(filename_im);
     if (file_re.is_open() && file_im.is_open()) {
         for (int i = 0; i < size; i++) {
-            fixed_double re, im;
+            ap_fixed_64p32 re, im;
             if ((file_re >> re) && (file_im >> im)) {
-                data[i] = std::complex<fixed_double>(re, im);
+                data[i] = std::complex<ap_fixed_64p32>(re, im);
             } else {
                 printf("Failed to read complex value from files: %s, %s\n",
                        filename_re, filename_im);
@@ -118,21 +118,21 @@ void test_utils::print_float(const char *name, float *data, int size) {
     }
     printf("\n");
 }
-void test_utils::print_float(const char *name, fixed_float *data, int size) {
+void test_utils::print_float(const char *name, ap_fixed_32p16 *data, int size) {
     print_name(name);
     for (int i = 0; i < size; i++) {
         printf("%f\n", (float)data[i]);
     }
     printf("\n");
 }
-void test_utils::print_float(const char *name, fixed_double *data, int size) {
+void test_utils::print_float(const char *name, ap_fixed_64p32 *data, int size) {
     print_name(name);
     for (int i = 0; i < size; i++) {
         printf("%f\n", (float)data[i]);
     }
     printf("\n");
 }
-void test_utils::print_complex(const char *name, complex_float *data,
+void test_utils::print_complex(const char *name, ap_complex_32p16 *data,
                                int size) {
     print_name(name);
     for (int i = 0; i < size; i++) {
@@ -140,7 +140,7 @@ void test_utils::print_complex(const char *name, complex_float *data,
     }
     printf("\n");
 }
-void test_utils::print_complex(const char *name, complex_double *data,
+void test_utils::print_complex(const char *name, ap_complex_64p32 *data,
                                int size) {
     print_name(name);
     for (int i = 0; i < size; i++) {
