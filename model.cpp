@@ -28,7 +28,7 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
     ap_fixed_32p16 Z2_dec = Z2 >> DECIMATION_SHIFT;
     PRINT(Z2_dec, 0);
 
-    ap_fixed_64p32 numerator = 2 * Z1 * Z2_dec; // DECIMATED!
+    ap_fixed_64p32 numerator = Z1 * Z2_dec; // DECIMATED!
     PRINT(numerator, 0);
 
     ap_fixed_32p16 denominator_sum_sqr = Z1 * Z1_dec + Z2 * Z2_dec; // DECIMATED!

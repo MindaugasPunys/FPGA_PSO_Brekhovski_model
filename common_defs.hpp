@@ -46,16 +46,16 @@ typedef std::complex<ap_fixed_64p48> ap_complex_64p48; // ap_complex_64p48
 typedef std::complex<ap_fixed_64p32> ap_complex_64p32; // ap_complex_64p32
 
 struct sModelArgs {
-    ap_fixed_32p16 alfa0;
-    ap_fixed_64p32 freq0;
-    ap_fixed_32p16 c2;
-    ap_fixed_32p16 n;
-    ap_fixed_32p16 ro2;
-    ap_fixed_32p16 h;
+    ap_fixed_32p16 alfa0; /* Attenuation coefficient */
+    ap_fixed_64p32 freq0; /* Normalized resonant frequency */
+    ap_fixed_32p16 c2; /* Speed of sound in the second medium */
+    ap_fixed_32p16 n; /* Attenuation exponent */
+    ap_fixed_32p16 ro2; /* Density of the second medium */
+    ap_fixed_32p16 h; /* Thickness of the second medium */
 };
 
 struct sModelParams {
-    ap_fixed_64p32 fsampl;
-    ap_fixed_32p16 c1;
-    ap_fixed_32p16 ro1;
+    ap_fixed_64p32 fsampl; /* Sampling frequency */
+    ap_fixed_32p16 c1; /* Speed of sound in the first medium */
+    ap_fixed_32p16 ro1; /* Density of the first medium */
 };
