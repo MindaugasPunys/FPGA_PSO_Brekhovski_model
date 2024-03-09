@@ -97,3 +97,11 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
         tf_out[i] = T;
     }
 }
+
+void WaveSynthesize(const sModelArgs args, const sModelParams params,
+                    const ap_fixed_64p32
+                    const ap_fixed_64p32 *freq_axis, ap_complex_32p16 *tf_out) {
+
+    const ap_complex_32p16 imag_unit = ap_complex_32p16(0, 1);
+    
+}
