@@ -27,7 +27,35 @@ void test_TransferFunction(void) {
     TransferFunction(args, params, in_freq_axis, tf_result);
 }
 
+void test_WaveSynthesis(void) {
+    test_utils util;
+    /* Read test input values */
+    ap_fixed_64p32 in_args[ARGS_SIZE] = {0.0f};
+    util.file_read_float(ARGS_DIR, &in_args[0], ARGS_SIZE);
+    sModelArgs args = {in_args[0], in_args[1], in_args[2],
+                       in_args[3], in_args[4], in_args[5]};
+
+    ap_fixed_64p32 in_params[PARAMS_SIZE] = {0.0f};
+    util.file_read_float(PARAMS_DIR, &in_params[0], PARAMS_SIZE);
+    sModelParams params = {in_params[0], in_params[1], in_params[2]};
+
+    ap_fixed_64p32 in_freq_axis[FREQ_AXIS_SIZE] = {0.0f};
+    util.file_read_float(FREQ_AXIS_DIR, &in_freq_axis[0], FREQ_AXIS_SIZE);
+
+    ap_fixed_32p16 in_refrence[TRANSFER_FUNC_SIZE];
+    util.file_read_float(REFRENCE_DIR, &in_refrence[0], TRANSFER_FUNC_SIZE);
+
+    /* Read expected output values */
+    ap_fixed_32p16 wave_out[TRANSFER_FUNC_SIZE];
+    util.file_read_float(WAVE_DIR, &wave_out[0], TRANSFER_FUNC_SIZE);
+
+    /* Call the model */
+    ap_fixed_32p16 wave_result[TRANSFER_FUNC_SIZE];
+    WaveSynthesis(args, params, in_refrence, in_freq_axis, wave_result);
+}
+
 int main() {
-    test_TransferFunction();
+    // test_TransferFunction();
+    test_WaveSynthesis();
     return 0;
 }

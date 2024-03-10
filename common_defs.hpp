@@ -18,6 +18,9 @@
 #define FREQ_AXIS_DIR TEST_DIR "freq_axis.txt"
 #define TRANSFER_FUN_RE_DIR TEST_DIR "T_re.txt"
 #define TRANSFER_FUN_IM_DIR TEST_DIR "T_im.txt"
+
+#define WAVE_DIR TEST_DIR "Wave.txt"
+#define REFRENCE_DIR TEST_DIR "Reference.txt"
 /* ================================================================= */
 /* MACROS */
 /* ================================================================= */
@@ -25,11 +28,22 @@
 #ifdef DEBUG
 #define PRINT(variable, i) printf(#variable "[%d]: %f\n", i, (double)variable);
 #define PRINT_C(variable, i)                                                   \
-    printf(#variable "[%d]: %f, %f i\n", i, (double)variable.real(),             \
+    printf(#variable "[%d]: %f, %f i\n", i, (double)variable.real(),           \
            (double)variable.imag());
+#define PRINT_ARRAY(variable, size)                                            \
+    for (int i = 0; i < size; i++) {                                           \
+        printf(#variable "[%d]: %f\n", i, (double)variable[i]);                \
+    }
+#define PRINT_ARRAY_C(variable, size)                                          \
+    for (int i = 0; i < size; i++) {                                           \
+        printf(#variable "[%d]: %f, %f i\n", i, (double)variable[i].real(),    \
+               (double)variable[i].imag());                                    \
+    }
 #else
 #define PRINT(variable, i)
 #define PRINT_C(variable, i)
+#define PRINT_ARRAY(variable, size)
+#define PRINT_ARRAY_C(variable, size)
 #endif
 
 /* ================================================================= */

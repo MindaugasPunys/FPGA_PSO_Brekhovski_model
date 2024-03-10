@@ -1,6 +1,7 @@
 #include "model.hpp"
 #include "hls_math.h"
 #include <stdio.h>
+#include "fft_wrapper.hpp"
 
 #define DECIMATION_SHIFT 30
 // static const ap_fixed_64p32 PI = 3.14159265358979323846;
@@ -52,18 +53,18 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
     for (int i = 1; i < TRANSFER_FUNC_SIZE; i++) {
         /* Calculate alfa - attenuation coefficient */
         alf_1 = hls::abs(freq_axis[i]) / args.freq0;
-        PRINT(alf_1, i);
+        // PRINT(alf_1, i);
         alf_2 = hls::pow((float)alf_1, (float)args.n);
-        PRINT(alf_2, i);
+        // PRINT(alf_2, i);
         alf = args.alfa0 * alf_2;
-        PRINT(alf, i);
+        // PRINT(alf, i);
 
         /* Calculate k - wave number */
         // PRINT(freq_axis[i], i);
         k_real = PI_x_2 * freq_axis[i] / args.c2;
         k_imag = alf;
-        PRINT(k_real, i);
-        PRINT(k_imag, i);
+        // PRINT(k_real, i);
+        // PRINT(k_imag, i);
 
         /* Calculate transfer function */
         /* ================================================================= */
@@ -74,23 +75,23 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
 
         real_kh = k_real * args.h;
         imag_kh = k_imag * args.h;
-        PRINT(real_kh, i);
-        PRINT(imag_kh, i);
+        // PRINT(real_kh, i);
+        // PRINT(imag_kh, i);
 
         /* Apply Euler's Cosine Identity replacement */
         cos_kh_real = hls::cos(real_kh) * hls::cosh(imag_kh);
         cos_kh_imag = -1 * hls::sin(real_kh) * hls::sinh(imag_kh);
         cos_kh = ap_complex_32p16(cos_kh_real, cos_kh_imag);
-        PRINT_C(cos_kh, i);
+        // PRINT_C(cos_kh, i);
 
         /* Apply Euler's Sine Identity replacement */
         sin_kh_real = hls::sin(real_kh) * hls::cosh(imag_kh);
         sin_kh_imag = hls::cos(real_kh) * hls::sinh(imag_kh);
         sin_kh = ap_complex_32p16(sin_kh_real, sin_kh_imag);
-        PRINT_C(sin_kh, i);
+        // PRINT_C(sin_kh, i);
 
         denominator = ((ap_fixed_32p16)numerator * cos_kh) - (imag_unit * sin_kh * denominator_sum_sqr); // DECIMATED!
-        PRINT_C(denominator, i);
+        // PRINT_C(denominator, i);
 
         T = numerator / denominator;
         PRINT_C(T, i);
@@ -98,10 +99,43 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
     }
 }
 
-void WaveSynthesize(const sModelArgs args, const sModelParams params,
-                    const ap_fixed_64p32
-                    const ap_fixed_64p32 *freq_axis, ap_complex_32p16 *tf_out) {
+void WaveSynthesis(const sModelArgs args, const sModelParams params,
+                   const ap_fixed_32p16 *ref_signal,
+                   const ap_fixed_64p32 *freq_axis, ap_fixed_32p16 *wave_out) {
 
-    const ap_complex_32p16 imag_unit = ap_complex_32p16(0, 1);
-    
+    const ap_complex_32p16 imag_unit = ap_complex_32p16(0, -1);
+
+    /* Model Transfer function */
+    ap_complex_32p16 T[TRANSFER_FUNC_SIZE];
+    TransferFunction(args, params, freq_axis, T);
+
+    /* Model Response spectrum */
+    ap_complex_32p16 input_fft[TRANSFER_FUNC_SIZE];
+    FFT_call((fft_input_t *)ref_signal, input_fft);
+    PRINT_ARRAY_C(input_fft, TRANSFER_FUNC_SIZE);
+
+    ap_complex_32p16 T_conj;
+    ap_fixed_32p16 exp_arg;
+    ap_fixed_32p16 exp_sub_real;
+    ap_fixed_32p16 exp_sub_imag;
+    ap_complex_32p16 exp_sub;
+    ap_complex_32p16 resp_spectrum;
+    ap_complex_32p16 response_spectrum[TRANSFER_FUNC_SIZE];
+    ap_complex_32p16 wave_complex;
+    for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
+        T_conj = ap_complex_32p16(T[i].real(), -1 * T[i].imag());
+        PRINT_C(T_conj, i);
+        exp_arg = PI_x_2 * (freq_axis[i] * args.h / params.c1);
+        PRINT(exp_arg, i);
+        exp_sub_real = hls::cos(exp_arg);
+        exp_sub_imag = hls::sin(exp_arg);
+        exp_sub = ap_complex_32p16(exp_sub_real, exp_sub_imag);
+        PRINT_C(exp_sub, i);
+        response_spectrum[i] = input_fft[i] * T_conj * exp_sub;
+        resp_spectrum = response_spectrum[i];
+        PRINT_C(resp_spectrum, i);
+    }
+
+    IFFT_call(response_spectrum, wave_out);
+    PRINT_ARRAY(wave_out, TRANSFER_FUNC_SIZE);
 }

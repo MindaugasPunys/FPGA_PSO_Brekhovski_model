@@ -4,8 +4,8 @@
 /* PRIVATE FUNCTIONS */
 /* ================================================================= */
 
-static const uint32_t input_shift = (fft_input_t::iwidth - 8); // Same as division from max value
-static const uint32_t output_shift = (fft_input_t::iwidth - 1); // Same as multiplication from max value
+static const uint32_t input_shift = (fft_input_t::iwidth - 3); // Same as division from max value
+static const uint32_t output_shift = (fft_input_t::iwidth - 8); // Same as multiplication from max value
 /* Function to scale ap_fixed<32, 16> to complex<16, 1>
  * Example: Scale +-32,767 to +-1 */
 void FFT_input_to_complex(fft_input_t in[FFT_LENGTH], fft_complex_t out[FFT_LENGTH]) {
@@ -57,7 +57,6 @@ void FFT_complex_to_output(fft_complex_t in[FFT_LENGTH], fft_output_t out[FFT_LE
 		temp_real = temp_real << (input_shift + FFT_NFFT_MAX);
 		temp_imag = temp_complex.imag();
 		temp_imag = temp_imag << (input_shift + FFT_NFFT_MAX);
-		printf("temp_real: %d, temp_imag: %d\n", temp_real, temp_imag);
 		out[i] = fft_output_t(temp_real, temp_imag);
 	}
 }
