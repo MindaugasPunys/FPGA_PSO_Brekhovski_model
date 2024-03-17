@@ -65,7 +65,7 @@ struct sModelArgs {
     ap_fixed_32p16 c2; /* Speed of sound in the second medium */
     ap_fixed_32p16 n; /* Attenuation exponent */
     ap_fixed_32p16 ro2; /* Density of the second medium */
-    ap_fixed_32p16 h; /* Thickness of the second medium */
+    ap_fixed_64p32 h; /* Thickness of the second medium */
 };
 
 struct sModelParams {

@@ -5,7 +5,7 @@
 
 #define DECIMATION_SHIFT 30
 // static const ap_fixed_64p32 PI = 3.14159265358979323846;
-static const ap_fixed_32p16 PI_x_2 = 6.283185;
+static const ap_fixed_64p32 PI_x_2 = 6.28318530717958647692;
 
 void TransferFunction(const sModelArgs args, const sModelParams params,
                       const ap_fixed_64p32 *freq_axis, ap_complex_32p16 *tf_out) {
@@ -112,7 +112,7 @@ void WaveSynthesis(const sModelArgs args, const sModelParams params,
     /* Model Response spectrum */
     ap_complex_32p16 input_fft[TRANSFER_FUNC_SIZE];
     FFT_call((fft_input_t *)ref_signal, input_fft);
-    PRINT_ARRAY_C(input_fft, TRANSFER_FUNC_SIZE);
+    // PRINT_ARRAY_C(input_fft, TRANSFER_FUNC_SIZE);
 
     ap_complex_32p16 T_conj;
     ap_fixed_32p16 exp_arg;
@@ -124,16 +124,16 @@ void WaveSynthesis(const sModelArgs args, const sModelParams params,
     ap_complex_32p16 wave_complex;
     for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
         T_conj = ap_complex_32p16(T[i].real(), -1 * T[i].imag());
-        PRINT_C(T_conj, i);
-        exp_arg = PI_x_2 * (freq_axis[i] * args.h / params.c1);
-        PRINT(exp_arg, i);
+        // PRINT_C(T_conj, i);
+        exp_arg = PI_x_2 * (ap_fixed_32p16)(freq_axis[i] * args.h) / params.c1;
+        // PRINT(exp_arg, i);
         exp_sub_real = hls::cos(exp_arg);
         exp_sub_imag = hls::sin(exp_arg);
         exp_sub = ap_complex_32p16(exp_sub_real, exp_sub_imag);
-        PRINT_C(exp_sub, i);
+        // PRINT_C(exp_sub, i);
         response_spectrum[i] = input_fft[i] * T_conj * exp_sub;
         resp_spectrum = response_spectrum[i];
-        PRINT_C(resp_spectrum, i);
+        // PRINT_C(resp_spectrum, i);
     }
 
     IFFT_call(response_spectrum, wave_out);
