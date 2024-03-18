@@ -55,13 +55,14 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
         alf_1 = hls::abs(freq_axis[i]) / args.freq0;
         // PRINT(alf_1, i);
         alf_2 = hls::pow((float)alf_1, (float)args.n);
+        // alf_2 = alf_1 ^ args.n;
         // PRINT(alf_2, i);
         alf = args.alfa0 * alf_2;
         // PRINT(alf, i);
 
         /* Calculate k - wave number */
         // PRINT(freq_axis[i], i);
-        k_real = PI_x_2 * freq_axis[i] / args.c2;
+        k_real = PI_x_2 * (ap_fixed_32p16)(freq_axis[i] / args.c2);
         k_imag = alf;
         // PRINT(k_real, i);
         // PRINT(k_imag, i);
