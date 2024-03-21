@@ -1,14 +1,9 @@
 #pragma once
 
-typedef struct sParticle_t {
-    /* Position == ModelArgs */
-    sModelArgs position;
-    sModelArgs position_best;
-    sModelArgs velocity;
+#include "common_defs.hpp"
 
-    ap_fixed_32p16 fitness_current;
-    ap_fixed_32p16 fitness_best;
-} sParticle_t;
+#define PSO_SWARM_SIZE 100
+#define PSO_MAX_ITER 1000
 
 void pso_process(sModelArgs &args_estimate, const sModelParams &params,
                  const ap_fixed_32p16 *ref_signal,

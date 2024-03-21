@@ -2,36 +2,23 @@
 
 #include "common_defs.hpp"
 
-
-
-template <typename T>
-struct sConstaints_t {
+template <typename T> struct sConstaints_t {
     T min;
     T def;
     T max;
     ap_fixed_32p16 inertia;
-    ap_fixed_32p16 personl_weight;
+    ap_fixed_32p16 personal_weight;
     ap_fixed_32p16 global_weight;
 };
 
-struct sModelArgsMinMax_t {
-    sMinDefMax_t<ap_fixed_32p16> alfa0;
-    sMinDefMax_t<ap_fixed_64p32> freq0;
-    sMinDefMax_t<ap_fixed_32p16> c2;
-    sMinDefMax_t<ap_fixed_32p16> n;
-    sMinDefMax_t<ap_fixed_32p16> ro2;
-    sMinDefMax_t<ap_fixed_64p32> h;
-};
-
-typedef struct sParticle_t {
-    /* Position == ModelArgs */
-    sModelArgs position;
-    sModelArgs position_best;
-    sModelArgs velocity;
-
-    ap_fixed_32p16 current_fitness;
-    ap_fixed_32p16 best_fitness;
-} sParticle_t;
+typedef struct sModelArgsMinMax_t {
+    sConstaints_t<ap_fixed_32p16> alfa0;
+    sConstaints_t<ap_fixed_64p32> freq0;
+    sConstaints_t<ap_fixed_32p16> c2;
+    sConstaints_t<ap_fixed_32p16> n;
+    sConstaints_t<ap_fixed_32p16> ro2;
+    sConstaints_t<ap_fixed_64p32> h;
+} sModelArgsMinMax_t;
 
 /* PRNG */
 /* Xorshift16 */
@@ -43,9 +30,9 @@ uint16_t xorshift16() {
     return RNG16;
 }
 ap_fixed_32p16 PRNG_16() {
-	ap_fixed_32p16 randomFloat = (xorshift16() & 0x7FFF);
-	randomFloat = randomFloat >> 15;
-	return randomFloat;
+    ap_fixed_32p16 randomFloat = (xorshift16() & 0x7FFF);
+    randomFloat = randomFloat >> 15;
+    return randomFloat;
 }
 
 /* Xorshift32 */
@@ -74,4 +61,16 @@ ap_fixed_32p16 PRNG_64() {
     ap_fixed_32p16 randomFloat = (xorshift64() & 0x7FFFFFFFFFFFFFFF);
     randomFloat = randomFloat >> 63;
     return randomFloat;
+}
+
+void pso_util_print(const char *text, int i, sModelArgs args) {
+    printf("%s[%-4d]: alfa0=%-10f, freq0=%-10f, c2=%-10f, n=%-10f, ro2=%-10f, h=%-10f\n", text, i,
+           (float)args.alfa0, (float)args.freq0, (float)args.c2, (float)args.n,
+           (float)args.ro2, (float)args.h);
+}
+
+void pso_util_print(const char *text, sModelArgs args) {
+    printf("[PSO] %s: alfa0=%-10f, freq0=%-10f, c2=%-10f, n=%-10f, ro2=%-10f, h=%-10f\n", text,
+           (float)args.alfa0, (float)args.freq0, (float)args.c2, (float)args.n,
+           (float)args.ro2, (float)args.h);
 }
