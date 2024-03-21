@@ -5,7 +5,7 @@
 
 #define DECIMATION_SHIFT 30
 // static const ap_fixed_64p32 PI = 3.14159265358979323846;
-static const ap_fixed_64p32 PI_x_2 = 6.28318530717958647692;
+static const ap_fixed_32p16 PI_x_2 = 6.28318530717958647692;
 
 void TransferFunction(const sModelArgs args, const sModelParams params,
                       const ap_fixed_64p32 *freq_axis, ap_complex_32p16 *tf_out) {
