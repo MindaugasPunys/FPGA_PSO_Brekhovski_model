@@ -2,39 +2,45 @@
 #include "pso_utils.hpp"
 
 #define PSO_DIMENSION ARGS_SIZE
+#define DECIMAL_PART_64P32 0xFFFFFFFF
+#define WHOLE_PART_64P32(x) (((x) << 32) | DECIMAL_PART_64P32)
 
-typedef struct sParticle_t {
+struct sParticle_t {
     /* Position == ModelArgs */
-    sModelArgs position;
-    sModelArgs velocity;
+    ap_fixed_64p32 position[PSO_DIMENSION];
+    ap_fixed_64p32 velocity[PSO_DIMENSION];
     ap_fixed_64p32 fitness_current;
 
-    sModelArgs position_best;
+    ap_fixed_64p32 position_best[PSO_DIMENSION];
     ap_fixed_64p32 fitness_best;
-} sParticle_t;
+};
 
 /* Constants */
 static const ap_fixed_32p16 PI_x_2 = 6.28318530717958647692;
 
-static const sModelArgsMinMax_t args_const_lut = {
-/*   MIN    DEFAULT     MAX         INERTIA     PERSONAL_W      GLOBAL_W        ARG     UNIT        */
-    {0,     20,         100,        0.5,        1,              1       },  /*  alfa0   [-]         */
-    {0,     500000,     10000000,   0.5,        1,              1       },  /*  freq0   [Hz]        */
-    {0,     1000,       2000,       0.5,        1,              1       },  /*  c2      [m/s]       */
-    {0,     2,          10,         0.5,        1,              1       },  /*  n       [-]         */
-    {0,     1000,       2000,       0.5,        1,              1       },  /*  ro2     [kg/m^3]    */
-    {0,     0.0010,     1,          0.5,        1,              1       }   /*  h       [m]         */
+/* max_mask = INT part + FFFFFFFF float part */
+static const sArgConst_t args_const_lut[ARGS_SIZE] = {
+/*   max,               max_mask,   inert,  pers,   glb     ARG     */
+/*     DECIMAL PART -> |FFFFFFFF|                                   */
+    {100,           0x7FFFFFFFFF,   0.5,    1,      1}, /*  alfa0   */
+    {10000000,  0x7FFFFFFFFFFFFF,   0.5,    1,      1}, /*  freq0   */
+    {2000,         0x7FFFFFFFFFF,   0.5,    1,      1}, /*  c2      */
+    {10,             0xFFFFFFFFF,   0.5,    1,      1}, /*  n       */
+    {2000,         0x7FFFFFFFFFF,   0.5,    1,      1}, /*  ro2     */
+    {1,               0xFFFFFFFF,   0.5,    1,      1}  /*  h       */
 };
 
-ap_fixed_64p32 pso_fitness(const sModelArgs args, const sModelParams params,
+ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 *args,
+                           const sModelParams &params,
                            const ap_fixed_32p16 *ref_signal,
                            const ap_fixed_64p32 *freq_axis) {
     /* Add your code here */
     ap_fixed_64p32 fitness = 0;
     /* TEST */
-    fitness = args.alfa0 * args.alfa0 + args.freq0 * args.freq0 +
-              args.c2 * args.c2 + args.n * args.n + args.ro2 * args.ro2 +
-              args.h * args.h;
+    // fitness = args[0] * args[0] + args[3] * args[3] + args[5] * args[5];
+    // fitness = args[0] * args[0] + args[2] * args[2] +
+    //           args[3] * args[3] + args[4] * args[4] + args[5] * args[5];
+    fitness = args[0] + args[1] + args[2] + args[3] + args[4] + args[5];
     return fitness;
 }
 
@@ -44,59 +50,53 @@ static void pso_swarm_init(sParticle_t *swarm, const sModelParams &params,
                            const ap_fixed_64p32 *freq_axis) {
     /* Initiate swarm values */
     for (int i = 0; i < PSO_SWARM_SIZE; i++) {
-        swarm[i].position.alfa0 = args_const_lut.alfa0.max * PRNG_16();
-        swarm[i].position.freq0 = args_const_lut.freq0.max * PRNG_32();
-        swarm[i].position.c2 = args_const_lut.c2.max * PRNG_16();
-        swarm[i].position.n = args_const_lut.n.max * PRNG_16();
-        swarm[i].position.ro2 = args_const_lut.ro2.max * PRNG_16();
-        swarm[i].position.h = args_const_lut.h.max * PRNG_32();
-
-        swarm[i].position_best = swarm[i].position;
-
-        swarm[i].velocity.alfa0 = 0;
-        swarm[i].velocity.freq0 = 0;
-        swarm[i].velocity.c2 = 0;
-        swarm[i].velocity.n = 0;
-        swarm[i].velocity.ro2 = 0;
-        swarm[i].velocity.h = 0;
+        for (int j = 0; j < PSO_DIMENSION; j++) {
+            swarm[i].position[j] = PRNG_64p32(args_const_lut[j].max_mask);
+            swarm[i].position_best[j] = swarm[i].position[j];
+            swarm[i].velocity[j] = 0;
+        }
 
         swarm[i].fitness_current =
             pso_fitness(swarm[i].position, params, ref_signal, freq_axis);
         swarm[i].fitness_best = swarm[i].fitness_current;
+        pso_util_print("init", i, swarm[i].position);
     }
 }
-
-#define CALC_ARG_VELOCITY(arg, rng_1, rng_2)                                   \
-    swarm.velocity.arg = args_const_lut.arg.inertia * swarm.velocity.arg +     \
-                         args_const_lut.arg.personal_weight * rng_1 *          \
-                             (swarm.position_best.arg - swarm.position.arg) +  \
-                         args_const_lut.arg.global_weight * rng_2 *            \
-                             (global_best.position.arg - swarm.position.arg);
 
 static void pso_update_velocity(sParticle_t &swarm, sParticle_t &global_best) {
-    ap_fixed_32p16 rand_val[2 * PSO_DIMENSION];
-    for (int j = 0; j < 2 * PSO_DIMENSION; j++) {
-        rand_val[j] = PRNG_16();
+    ap_fixed_64p32 rand_val_1, rand_val_2;
+    ap_fixed_64p32 vel_interia, vel_personal, vel_global;
+    for (int j = 0; j < PSO_DIMENSION; j++) {
+        rand_val_1 = PRNG_64p32(DECIMAL_PART_64P32);
+        rand_val_2 = PRNG_64p32(DECIMAL_PART_64P32);
+        // printf("rand_val[%d]: %f, rand_val[%d]: %f\n", 2 * j,
+        // (double)rand_val[2 * j], 2 * j + 1, (double)rand_val[2 * j + 1]);
+        vel_interia = args_const_lut[j].inertia * swarm.velocity[j];
+        vel_personal = args_const_lut[j].personal_weight * rand_val_1 *
+                       (swarm.position_best[j] - swarm.position[j]);
+        vel_global = args_const_lut[j].global_weight * rand_val_2 *
+                     (global_best.position[j] - swarm.position[j]);
+        swarm.velocity[j] = vel_interia + vel_personal + vel_global;
+        // swarm.velocity[j] =
+        //     args_const_lut[j].inertia * swarm.velocity[j] +
+        //     args_const_lut[j].personal_weight * rand_val_1 *
+        //     (swarm.position_best[j] - swarm.position[j]) +
+        //     args_const_lut[j].global_weight * rand_val_2 *
+        //     (global_best.position[j] - swarm.position[j]);
     }
-    /* Update all arguments */
-    CALC_ARG_VELOCITY(alfa0, rand_val[0], rand_val[1])
-    CALC_ARG_VELOCITY(freq0, rand_val[2], rand_val[3])
-    CALC_ARG_VELOCITY(c2, rand_val[4], rand_val[5])
-    CALC_ARG_VELOCITY(n, rand_val[6], rand_val[7])
-    CALC_ARG_VELOCITY(ro2, rand_val[8], rand_val[9])
-    CALC_ARG_VELOCITY(h, rand_val[10], rand_val[11])
 }
 
-#define CALC_ARG_POSITION(arg) swarm.position.arg += swarm.velocity.arg;
-
 static void pso_update_position(sParticle_t &swarm) {
-    /* Update all arguments */
-    CALC_ARG_POSITION(alfa0)
-    CALC_ARG_POSITION(freq0)
-    CALC_ARG_POSITION(c2)
-    CALC_ARG_POSITION(n)
-    CALC_ARG_POSITION(ro2)
-    CALC_ARG_POSITION(h)
+    for (int j = 0; j < PSO_DIMENSION; j++) {
+        swarm.position[j] += swarm.velocity[j];
+    }
+}
+
+static void pso_copy_position(ap_fixed_64p32 *source, ap_fixed_64p32 *dest) {
+    for (int i = 0; i < PSO_DIMENSION; i++) {
+        // printf(" %f --> %f\n", (double)source[i], (double)dest[i]);
+        dest[i] = source[i];
+    }
 }
 
 static void pso_update_fitness(sParticle_t &swarm, const sModelParams &params,
@@ -106,7 +106,7 @@ static void pso_update_fitness(sParticle_t &swarm, const sModelParams &params,
         pso_fitness(swarm.position, params, ref_signal, freq_axis);
     if (swarm.fitness_current < swarm.fitness_best) {
         swarm.fitness_best = swarm.fitness_current;
-        swarm.position_best = swarm.position;
+        pso_copy_position(swarm.position, swarm.position_best);
     }
 }
 
@@ -120,36 +120,43 @@ static void pso_swarm_update(sParticle_t *swarm, sParticle_t &global_best,
         pso_update_velocity(swarm[i], global_best);
         pso_update_position(swarm[i]);
         pso_update_fitness(swarm[i], params, ref_signal, freq_axis);
-        pso_util_print("swarm", i, swarm[i].position);
+        // pso_util_print("swarm", i, swarm[i].position);
+        // pso_util_print("best", i, swarm[i].position_best);
     }
 }
 
 /* Find best particle in the swarm and return its fitness */
-static ap_fixed_32p16 pso_find_global_best(sParticle_t *swarm,
-                                           sParticle_t &global_best) {
+static void pso_find_global_best(sParticle_t *swarm, sParticle_t &global_best) {
     for (int i = 0; i < PSO_SWARM_SIZE; i++) {
         if (swarm[i].fitness_best < global_best.fitness_best) {
-            global_best = swarm[i];
+            // pso_util_print("global_best", i, swarm[i].position_best);
+            global_best.fitness_best = swarm[i].fitness_best;
+            pso_copy_position(swarm[i].position, global_best.position);
+            pso_copy_position(swarm[i].position_best,
+                              global_best.position_best);
         }
     }
-    return global_best.fitness_best;
 }
 
-void pso_process(sModelArgs &args_estimate, const sModelParams &params,
+void pso_process(ap_fixed_64p32 *args_estimate, const sModelParams &params,
                  const ap_fixed_32p16 *ref_signal,
                  const ap_fixed_64p32 *freq_axis, const uint16_t itterations) {
 
     sParticle_t swarm[PSO_SWARM_SIZE];
+ #pragma HLS array_partition variable = swarm->position complete
     sParticle_t global_best;
-    ap_fixed_32p16 global_best_fitness = 32768;
-
+ #pragma HLS array_partition variable = global_best.position complete
     pso_swarm_init(swarm, params, ref_signal, freq_axis);
-    global_best_fitness = pso_find_global_best(swarm, global_best);
+    global_best = swarm[0];
+    pso_find_global_best(swarm, global_best);
+    pso_util_print("initial_best", 0, global_best.position);
 
     for (int iter = 0; iter < itterations; iter++) {
         pso_swarm_update(swarm, global_best, params, ref_signal, freq_axis);
-        global_best_fitness = pso_find_global_best(swarm, global_best);
-        args_estimate = global_best.position_best;
-        // pso_util_print("best", args_estimate);
+        pso_find_global_best(swarm, global_best);
+        pso_copy_position(global_best.position, args_estimate);
+        pso_util_print("best", iter, global_best.position);
+        // printf("fitness: %f\n", (double)global_best.fitness_best);
     }
+    printf("final fitness: %f\n", (double)global_best.fitness_best);
 }

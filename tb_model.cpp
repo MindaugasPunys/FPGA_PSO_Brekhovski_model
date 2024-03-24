@@ -74,7 +74,8 @@ void test_pso_process(void) {
     util.file_read_float(REFRENCE_DIR, &in_refrence[0], TRANSFER_FUNC_SIZE);
 
     /* Call the model */
-    sModelArgs args_estimate = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+    // sModelArgs args_estimate = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+    ap_fixed_64p32 args_estimate[PARAMS_SIZE] = {0.0f};
     pso_process(args_estimate, params, in_refrence, in_freq_axis, 100);
 }
 
