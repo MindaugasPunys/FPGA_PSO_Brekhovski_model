@@ -12,7 +12,9 @@
 #define FREQ_AXIS_SIZE 2048
 #define TRANSFER_FUNC_SIZE 2048
 
-#define TEST_DIR "D:/Magistras/Magistro projektas/Matlab_realization/Raw/test/TransferFunction/"
+#define TEST_DIR                                                               \
+    "D:/Magistras/Magistro "                                                   \
+    "projektas/Matlab_realization/Raw/test/TransferFunction/"
 #define ARGS_DIR TEST_DIR "OriginalArgs.txt"
 #define PARAMS_DIR TEST_DIR "acquisition_parameters.txt"
 #define FREQ_AXIS_DIR TEST_DIR "freq_axis.txt"
@@ -62,14 +64,14 @@ typedef std::complex<ap_fixed_64p32> ap_complex_64p32; // ap_complex_64p32
 struct sModelArgs {
     ap_fixed_32p16 alfa0; /* Attenuation coefficient */
     ap_fixed_64p32 freq0; /* Normalized resonant frequency */
-    ap_fixed_32p16 c2; /* Speed of sound in the second medium */
-    ap_fixed_32p16 n; /* Attenuation exponent */
-    ap_fixed_32p16 ro2; /* Density of the second medium */
-    ap_fixed_64p32 h; /* Thickness of the second medium */
+    ap_fixed_32p16 c2;    /* Speed of sound in the second medium */
+    ap_fixed_32p16 n;     /* Attenuation exponent */
+    ap_fixed_32p16 ro2;   /* Density of the second medium */
+    ap_fixed_64p32 h;     /* Thickness of the second medium */
 };
 
 struct sModelParams {
     ap_fixed_64p32 fsampl; /* Sampling frequency */
-    ap_fixed_32p16 c1; /* Speed of sound in the first medium */
-    ap_fixed_32p16 ro1; /* Density of the first medium */
+    ap_fixed_32p16 c1;     /* Speed of sound in the first medium */
+    ap_fixed_32p16 ro1;    /* Density of the first medium */
 };

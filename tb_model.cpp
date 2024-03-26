@@ -1,7 +1,7 @@
 #include "common_defs.hpp"
 #include "model.hpp"
-#include "test_utils.hpp"
 #include "pso.hpp"
+#include "test_utils.hpp"
 
 void test_TransferFunction(void) {
     test_utils util;
@@ -62,7 +62,7 @@ void test_pso_process(void) {
     util.file_read_float(ARGS_DIR, &in_args[0], ARGS_SIZE);
     sModelArgs args = {in_args[0], in_args[1], in_args[2],
                        in_args[3], in_args[4], in_args[5]};
-    
+
     ap_fixed_64p32 in_params[PARAMS_SIZE] = {0.0f};
     util.file_read_float(PARAMS_DIR, &in_params[0], PARAMS_SIZE);
     sModelParams params = {in_params[0], in_params[1], in_params[2]};
@@ -76,7 +76,7 @@ void test_pso_process(void) {
     /* Call the model */
     // sModelArgs args_estimate = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
     ap_fixed_64p32 args_estimate[PARAMS_SIZE] = {0.0f};
-    pso_process(args_estimate, params, in_refrence, in_freq_axis, 100);
+    pso_process(args_estimate, params, in_refrence, in_freq_axis, 1000);
 }
 
 int main() {
