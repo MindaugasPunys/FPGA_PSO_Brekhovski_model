@@ -1,5 +1,6 @@
 #include "pso.hpp"
 #include "pso_utils.hpp"
+#include "model.hpp"
 
 #define PSO_DIMENSION ARGS_SIZE
 #define DECIMAL_PART_64P32 0xFFFFFFFF
@@ -30,17 +31,28 @@ static const sArgConst_t args_const_lut[ARGS_SIZE] = {
     {1,               0xFFFFFFFF,   0.5,    1,      1}  /*  h       */
 };
 
-ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 *args,
+ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
                            const sModelParams &params,
                            const ap_fixed_32p16 ref_signal[TRANSFER_FUNC_SIZE],
                            const ap_fixed_64p32 freq_axis[TRANSFER_FUNC_SIZE]) {
     /* Add your code here */
     ap_fixed_64p32 fitness = 0;
     /* TEST */
-    // fitness = args[0] * args[0] + args[3] * args[3] + args[5] * args[5];
-    // fitness = args[0] * args[0] + args[2] * args[2] +
-    //           args[3] * args[3] + args[4] * args[4] + args[5] * args[5];
-    fitness = args[0] + args[1] + args[2] + args[3] + args[4] + args[5];
+//     fitness = args[0] + args[1] + args[2] + args[3] + args[4] + args[5];
+
+    /* Call the model */
+    sModelArgs model_args = {args[0], args[1], args[2], args[3], args[4], args[5]};
+    ap_fixed_32p16 wave_result[TRANSFER_FUNC_SIZE];
+    WaveSynthesis(model_args, params, ref_signal, freq_axis, wave_result);
+
+    /* Calculate fitness */
+    ap_fixed_32p16 diff, numerator, denominator;
+    for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
+        diff = wave_result[i] - ref_signal[i];
+        numerator += diff * diff;
+        denominator += ref_signal[i] * ref_signal[i];
+    }
+    fitness = numerator / denominator;
     return fitness;
 }
 
@@ -166,7 +178,7 @@ void pso_process(ap_fixed_64p32 args_estimate[PARAMS_SIZE],
     pso_find_global_best(swarm, global_best);
     pso_util_print("initial_best", 0, global_best.position);
 
-    for (int iter = 0; iter < itterations; iter++) {
+    for (int iter = 0; iter < PSO_ITERATIONS; iter++) {
         pso_swarm_update(swarm, global_best, params, ref_signal, freq_axis);
         pso_find_global_best(swarm, global_best);
         pso_copy_position(global_best.position, args_estimate);

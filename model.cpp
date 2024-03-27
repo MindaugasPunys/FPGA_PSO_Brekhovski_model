@@ -21,19 +21,19 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
     ap_fixed_32p16 k_imag = 0;
 
     ap_fixed_32p16 Z1 = params.c1 * params.ro1;
-    PRINT(Z1, 0);
+    // PRINT(Z1, 0);
     ap_fixed_32p16 Z1_dec = Z1 >> DECIMATION_SHIFT;
-    PRINT(Z1_dec, 0);
+    // PRINT(Z1_dec, 0);
     ap_fixed_64p32 Z2 = args.c2 * args.ro2;
-    PRINT(Z2, 0);
+    // PRINT(Z2, 0);
     ap_fixed_32p16 Z2_dec = Z2 >> DECIMATION_SHIFT;
-    PRINT(Z2_dec, 0);
+    // PRINT(Z2_dec, 0);
 
     ap_fixed_64p32 numerator = Z1 * Z2_dec; // DECIMATED!
-    PRINT(numerator, 0);
+    // PRINT(numerator, 0);
 
     ap_fixed_32p16 denominator_sum_sqr = Z1 * Z1_dec + Z2 * Z2_dec; // DECIMATED!
-    PRINT(denominator_sum_sqr, 0);
+    // PRINT(denominator_sum_sqr, 0);
 
     ap_fixed_32p16 real_kh = 0;
     ap_fixed_32p16 imag_kh = 0;
@@ -95,7 +95,7 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
         // PRINT_C(denominator, i);
 
         T = numerator / denominator;
-        PRINT_C(T, i);
+        // PRINT_C(T, i);
         tf_out[i] = T;
     }
 }
@@ -138,5 +138,5 @@ void WaveSynthesis(const sModelArgs args, const sModelParams params,
     }
 
     IFFT_call(response_spectrum, wave_out);
-    PRINT_ARRAY(wave_out, TRANSFER_FUNC_SIZE);
+    // PRINT_ARRAY(wave_out, TRANSFER_FUNC_SIZE);
 }
