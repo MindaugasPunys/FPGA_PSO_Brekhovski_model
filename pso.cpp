@@ -23,12 +23,12 @@ static const ap_fixed_32p16 PI_x_2 = 6.28318530717958647692;
 static const sArgConst_t args_const_lut[ARGS_SIZE] = {
 /*   max,               max_mask,   inert,  pers,   glb     ARG     */
 /*     DECIMAL PART -> |FFFFFFFF|                                   */
-    {100,           0x7FFFFFFFFF,   0.5,    1,      1}, /*  alfa0   */
-    {10000000,  0x7FFFFFFFFFFFFF,   0.5,    1,      1}, /*  freq0   */
-    {2000,         0x7FFFFFFFFFF,   0.5,    1,      1}, /*  c2      */
-    {10,             0xFFFFFFFFF,   0.5,    1,      1}, /*  n       */
-    {2000,         0x7FFFFFFFFFF,   0.5,    1,      1}, /*  ro2     */
-    {1,               0xFFFFFFFF,   0.5,    1,      1}  /*  h       */
+    {100,           0x7FFFFFFFFF,   0.1,      1,      1}, /*  alfa0   */
+    {10000000,  0x7FFFFFFFFFFFFF,   0.1,      1,      1}, /*  freq0   */
+    {2000,         0x7FFFFFFFFFF,   0.1,      1,      1}, /*  c2      */
+    {10,             0xFFFFFFFFF,   0.1,      1,      1}, /*  n       */
+    {2000,         0x7FFFFFFFFFF,   0.1,      1,      1}, /*  ro2     */
+    {1,               0xFFFFFFFF,   0.1,      1,      1}  /*  h       */
 };
 
 ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
@@ -46,13 +46,20 @@ ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
     WaveSynthesis(model_args, params, ref_signal, freq_axis, wave_result);
 
     /* Calculate fitness */
-    ap_fixed_32p16 diff, numerator, denominator;
+    ap_fixed_64p32 diff;
+    ap_fixed_64p32 numerator = 0;
+    ap_fixed_64p32 denominator = 0;
     for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
         diff = wave_result[i] - ref_signal[i];
         numerator += diff * diff;
         denominator += ref_signal[i] * ref_signal[i];
     }
-    fitness = numerator / denominator;
+    if (denominator == 0) {
+        fitness = 999999;
+    } else {
+        fitness = numerator / denominator;
+        printf(" %-10f / %-10f = %-10f\n", (double)numerator, (double)denominator, (double)fitness);
+    }
     return fitness;
 }
 
@@ -183,7 +190,7 @@ void pso_process(ap_fixed_64p32 args_estimate[PARAMS_SIZE],
         pso_find_global_best(swarm, global_best);
         pso_copy_position(global_best.position, args_estimate);
         pso_util_print("best", iter, global_best.position);
-        // printf("fitness: %f\n", (double)global_best.fitness_best);
+        printf("fitness: %f\n", (double)global_best.fitness_best);
     }
     printf("final fitness: %f\n", (double)global_best.fitness_best);
 }
