@@ -15,8 +15,8 @@ void test_TransferFunction(void) {
     util.file_read_float(PARAMS_DIR, &in_params[0], PARAMS_SIZE);
     sModelParams params = {in_params[0], in_params[1], in_params[2]};
 
-    ap_fixed_64p32 in_freq_axis[FREQ_AXIS_SIZE] = {0.0f};
-    util.file_read_float(FREQ_AXIS_DIR, &in_freq_axis[0], FREQ_AXIS_SIZE);
+    ap_fixed_64p32 in_freq_axis[TRANSFER_FUNC_SIZE] = {0.0f};
+    util.file_read_float(FREQ_AXIS_DIR, &in_freq_axis[0], TRANSFER_FUNC_SIZE);
 
     /* Read expected output values */
     ap_complex_64p32 tf_out[TRANSFER_FUNC_SIZE];
@@ -26,6 +26,11 @@ void test_TransferFunction(void) {
     /* Call the model */
     ap_complex_32p16 tf_result[TRANSFER_FUNC_SIZE];
     TransferFunction(args, params, in_freq_axis, tf_result);
+
+    for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
+        ap_complex_64p32 T = tf_result[i];
+        PRINT_C(T, i);
+    }
 }
 
 void test_WaveSynthesis(void) {
@@ -40,8 +45,8 @@ void test_WaveSynthesis(void) {
     util.file_read_float(PARAMS_DIR, &in_params[0], PARAMS_SIZE);
     sModelParams params = {in_params[0], in_params[1], in_params[2]};
 
-    ap_fixed_64p32 in_freq_axis[FREQ_AXIS_SIZE] = {0.0f};
-    util.file_read_float(FREQ_AXIS_DIR, &in_freq_axis[0], FREQ_AXIS_SIZE);
+    ap_fixed_64p32 in_freq_axis[TRANSFER_FUNC_SIZE] = {0.0f};
+    util.file_read_float(FREQ_AXIS_DIR, &in_freq_axis[0], TRANSFER_FUNC_SIZE);
 
     ap_fixed_32p16 in_refrence[TRANSFER_FUNC_SIZE];
     util.file_read_float(REFRENCE_DIR, &in_refrence[0], TRANSFER_FUNC_SIZE);
@@ -53,6 +58,11 @@ void test_WaveSynthesis(void) {
     /* Call the model */
     ap_fixed_32p16 wave_result[TRANSFER_FUNC_SIZE];
     WaveSynthesis(args, params, in_refrence, in_freq_axis, wave_result);
+
+    for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
+        ap_fixed_32p16 wave_out = wave_result[i];
+        PRINT(wave_out, i);
+    }
 }
 
 void test_pso_process(void) {
@@ -67,8 +77,8 @@ void test_pso_process(void) {
     util.file_read_float(PARAMS_DIR, &in_params[0], PARAMS_SIZE);
     sModelParams params = {in_params[0], in_params[1], in_params[2]};
 
-    ap_fixed_64p32 in_freq_axis[FREQ_AXIS_SIZE] = {0.0f};
-    util.file_read_float(FREQ_AXIS_DIR, &in_freq_axis[0], FREQ_AXIS_SIZE);
+    ap_fixed_64p32 in_freq_axis[TRANSFER_FUNC_SIZE] = {0.0f};
+    util.file_read_float(FREQ_AXIS_DIR, &in_freq_axis[0], TRANSFER_FUNC_SIZE);
 
     ap_fixed_32p16 in_refrence[TRANSFER_FUNC_SIZE];
     util.file_read_float(REFRENCE_DIR, &in_refrence[0], TRANSFER_FUNC_SIZE);
@@ -80,8 +90,8 @@ void test_pso_process(void) {
 }
 
 int main() {
-    // test_TransferFunction();
-    // test_WaveSynthesis();
-    test_pso_process();
+    test_TransferFunction();
+    test_WaveSynthesis();
+    // test_pso_process();
     return 0;
 }
