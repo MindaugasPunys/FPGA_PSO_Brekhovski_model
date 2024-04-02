@@ -11,7 +11,7 @@ using namespace std;
 
 const char FFT_WIDTH = 32;
 const char FFT_CONFIG_WIDTH = 16;
-const char FFT_NFFT_MAX = 11;
+const char FFT_NFFT_MAX = 10;
 const int FFT_LENGTH = 1 << FFT_NFFT_MAX;
 
 struct config1 : hls::ip_fft::params_t {

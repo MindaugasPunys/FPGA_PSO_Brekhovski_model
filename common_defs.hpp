@@ -9,8 +9,7 @@
 
 #define ARGS_SIZE 6
 #define PARAMS_SIZE 3
-#define FREQ_AXIS_SIZE 2048
-#define TRANSFER_FUNC_SIZE 2048
+#define TRANSFER_FUNC_SIZE 1024
 
 #define TEST_DIR                                                               \
     "D:/Magistras/Magistro "                                                   \

@@ -11,7 +11,7 @@ static const uint32_t output_shift = (fft_input_t::iwidth - 8); // Same as multi
 void FFT_input_to_complex(fft_input_t in[FFT_LENGTH], fft_complex_t out[FFT_LENGTH]) {
 	fft_input_t temp_normalised = 0;
 	for (int i = 0; i < FFT_LENGTH; i++) {
-        temp_normalised = in[i] >> input_shift;
+        temp_normalised = in[i] >> FFT_NFFT_MAX + 1;
 		out[i] = fft_complex_t(temp_normalised, 0);
 	}
 }
@@ -23,9 +23,9 @@ void FFT_output_to_complex(fft_output_t in[FFT_LENGTH], fft_complex_t out[FFT_LE
 	fft_input_t temp_imag = 0;
 	for (int i = 0; i < FFT_LENGTH; i++) {
 		temp_real = in[i].real();
-        temp_real = temp_real >> output_shift;
+        temp_real = temp_real >> FFT_NFFT_MAX - 2;
 		temp_imag = in[i].imag();
-		temp_imag = temp_imag >> output_shift;
+		temp_imag = temp_imag >> FFT_NFFT_MAX - 2;
 		out[i] = fft_complex_t(temp_real, temp_imag);
 	}
 }
@@ -39,7 +39,7 @@ void FFT_complex_to_input(fft_complex_t in[FFT_LENGTH], fft_input_t out[FFT_LENG
 	for (int i = 0; i < FFT_LENGTH; i++) {
 		temp_complex = in[i];
 		temp_normalised = temp_complex.real();
-		temp_normalised = temp_normalised << output_shift;
+		temp_normalised = temp_normalised << FFT_NFFT_MAX - 1;
 		out[i] = temp_normalised;
 	}
 }
@@ -54,9 +54,9 @@ void FFT_complex_to_output(fft_complex_t in[FFT_LENGTH], fft_output_t out[FFT_LE
 	for (int i = 0; i < FFT_LENGTH; i++) {
 		temp_complex = in[i];
 		temp_real = temp_complex.real();
-		temp_real = temp_real << (input_shift + FFT_NFFT_MAX);
+		temp_real = temp_real << (2 * FFT_NFFT_MAX + 2);
 		temp_imag = temp_complex.imag();
-		temp_imag = temp_imag << (input_shift + FFT_NFFT_MAX);
+		temp_imag = temp_imag << (2 * FFT_NFFT_MAX + 2);
 		out[i] = fft_output_t(temp_real, temp_imag);
 	}
 }
