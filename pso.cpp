@@ -33,6 +33,7 @@ static const sArgConst_t args_const_lut[ARGS_SIZE] = {
 
 ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
                            const sModelParams &params,
+                           const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
                            const ap_fixed_32p16 ref_signal[TRANSFER_FUNC_SIZE],
                            const ap_fixed_64p32 freq_axis[TRANSFER_FUNC_SIZE]) {
     /* Add your code here */
@@ -50,15 +51,16 @@ ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
     ap_fixed_64p32 numerator = 0;
     ap_fixed_64p32 denominator = 0;
     for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
-        diff = wave_result[i] - ref_signal[i];
+        diff = wave_result[i] - meas_signal[i];
         numerator += diff * diff;
-        denominator += ref_signal[i] * ref_signal[i];
+        denominator += meas_signal[i] * meas_signal[i];
+        // printf(" %-10f += %-10f ^ 2\n", (double)denominator, (double)ref_signal[i]);
     }
     if (denominator == 0) {
         fitness = 999999;
     } else {
         fitness = numerator / denominator;
-        printf(" %-10f / %-10f = %-10f\n", (double)numerator, (double)denominator, (double)fitness);
+        // printf(" %-10f / %-10f = %-10f\n", (double)numerator, (double)denominator, (double)fitness);
     }
     return fitness;
 }
@@ -66,6 +68,7 @@ ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
 /* PSO Functions */
 static void pso_swarm_init(sParticle_t swarm[PSO_SWARM_SIZE],
                            const sModelParams &params,
+                           const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
                            const ap_fixed_32p16 ref_signal[TRANSFER_FUNC_SIZE],
                            const ap_fixed_64p32 freq_axis[TRANSFER_FUNC_SIZE]) {
     /* Initiate swarm values */
@@ -77,7 +80,7 @@ static void pso_swarm_init(sParticle_t swarm[PSO_SWARM_SIZE],
         }
 
         swarm[i].fitness_current =
-            pso_fitness(swarm[i].position, params, ref_signal, freq_axis);
+            pso_fitness(swarm[i].position, params, meas_signal, ref_signal, freq_axis);
         swarm[i].fitness_best = swarm[i].fitness_current;
         pso_util_print("init", i, swarm[i].position);
     }
@@ -126,10 +129,11 @@ static void pso_copy_position(ap_fixed_64p32 *source, ap_fixed_64p32 *dest) {
 
 static void
 pso_update_fitness(sParticle_t &swarm, const sModelParams &params,
+                   const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
                    const ap_fixed_32p16 ref_signal[TRANSFER_FUNC_SIZE],
                    const ap_fixed_64p32 freq_axis[TRANSFER_FUNC_SIZE]) {
     swarm.fitness_current =
-        pso_fitness(swarm.position, params, ref_signal, freq_axis);
+        pso_fitness(swarm.position, params, meas_signal, ref_signal, freq_axis);
     if (swarm.fitness_current < swarm.fitness_best) {
         swarm.fitness_best = swarm.fitness_current;
         pso_copy_position(swarm.position, swarm.position_best);
@@ -139,13 +143,14 @@ pso_update_fitness(sParticle_t &swarm, const sModelParams &params,
 static void
 pso_swarm_update(sParticle_t swarm[PSO_SWARM_SIZE], sParticle_t &global_best,
                  const sModelParams &params,
+                 const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
                  const ap_fixed_32p16 ref_signal[TRANSFER_FUNC_SIZE],
                  const ap_fixed_64p32 freq_axis[TRANSFER_FUNC_SIZE]) {
     /* Update velocity and position */
     for (int i = 0; i < PSO_SWARM_SIZE; i++) {
         pso_update_velocity(swarm[i], global_best);
         pso_update_position(swarm[i]);
-        pso_update_fitness(swarm[i], params, ref_signal, freq_axis);
+        pso_update_fitness(swarm[i], params, meas_signal, ref_signal, freq_axis);
         // pso_util_print("swarm", i, swarm[i].position);
         // pso_util_print("best", i, swarm[i].position_best);
     }
@@ -167,6 +172,7 @@ static void pso_find_global_best(sParticle_t swarm[PSO_SWARM_SIZE],
 
 void pso_process(ap_fixed_64p32 args_estimate[PARAMS_SIZE],
                  const sModelParams &params,
+                 const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
                  const ap_fixed_32p16 ref_signal[TRANSFER_FUNC_SIZE],
                  const ap_fixed_64p32 freq_axis[TRANSFER_FUNC_SIZE],
                  const uint16_t itterations) {
@@ -180,13 +186,13 @@ void pso_process(ap_fixed_64p32 args_estimate[PARAMS_SIZE],
 #pragma HLS array_partition variable = global_best.position complete
 #pragma HLS array_partition variable = global_best.position_best complete
 
-    pso_swarm_init(swarm, params, ref_signal, freq_axis);
+    pso_swarm_init(swarm, params, meas_signal, ref_signal, freq_axis);
     global_best = swarm[0];
     pso_find_global_best(swarm, global_best);
     pso_util_print("initial_best", 0, global_best.position);
 
     for (int iter = 0; iter < PSO_ITERATIONS; iter++) {
-        pso_swarm_update(swarm, global_best, params, ref_signal, freq_axis);
+        pso_swarm_update(swarm, global_best, params, meas_signal, ref_signal, freq_axis);
         pso_find_global_best(swarm, global_best);
         pso_copy_position(global_best.position, args_estimate);
         pso_util_print("best", iter, global_best.position);

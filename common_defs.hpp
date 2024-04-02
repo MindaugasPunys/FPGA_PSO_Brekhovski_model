@@ -22,6 +22,7 @@
 
 #define WAVE_DIR TEST_DIR "Wave.txt"
 #define REFRENCE_DIR TEST_DIR "Reference.txt"
+#define MEAS_DIR TEST_DIR "Measured.txt"
 /* ================================================================= */
 /* MACROS */
 /* ================================================================= */

@@ -83,15 +83,18 @@ void test_pso_process(void) {
     ap_fixed_32p16 in_refrence[TRANSFER_FUNC_SIZE];
     util.file_read_float(REFRENCE_DIR, &in_refrence[0], TRANSFER_FUNC_SIZE);
 
+    ap_fixed_32p16 in_meas_signal[TRANSFER_FUNC_SIZE];
+    util.file_read_float(MEAS_DIR, &in_meas_signal[0], TRANSFER_FUNC_SIZE);
+
     /* Call the model */
     // sModelArgs args_estimate = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
     ap_fixed_64p32 args_estimate[PARAMS_SIZE] = {0.0f};
-    pso_process(args_estimate, params, in_refrence, in_freq_axis, 100);
+    pso_process(args_estimate, params, in_meas_signal, in_refrence, in_freq_axis, 100);
 }
 
 int main() {
-    test_TransferFunction();
-    test_WaveSynthesis();
-    // test_pso_process();
+    // test_TransferFunction();
+    // test_WaveSynthesis();
+    test_pso_process();
     return 0;
 }
