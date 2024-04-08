@@ -89,7 +89,7 @@ void test_pso_process(void) {
     /* Call the model */
     // sModelArgs args_estimate = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
     ap_fixed_64p32 args_estimate[PARAMS_SIZE] = {0.0f};
-    pso_process(args_estimate, params, in_meas_signal, in_refrence, in_freq_axis, 100);
+    pso_process(args_estimate, in_args, params, in_meas_signal, in_refrence, in_freq_axis);
 }
 
 int main() {
