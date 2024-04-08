@@ -59,7 +59,7 @@ ap_fixed_64p32 PRNG_64p32(const uint64_t &max_mask) {
 }
 
 void pso_util_print(const char *text, int i, ap_fixed_64p32 *args) {
-    printf("%s[%-4d]: alfa0=%-10f, freq0=%-10f, c2=%-10f, n=%-10f, ro2=%-10f, h=%-10f\n", text, i,
+    printf("%s[%-4d]: alfa0=%-10f; freq0=%-10f; c2=%-10f; n=%-10f; ro2=%-10f; h=%-10f;\n", text, i,
            (double)args[0], (double)args[1], (double)args[2], (double)args[3],
               (double)args[4], (double)args[5]);
 }
