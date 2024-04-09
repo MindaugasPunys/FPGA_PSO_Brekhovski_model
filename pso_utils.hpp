@@ -2,9 +2,12 @@
 
 #include "common_defs.hpp"
 
-struct sArgConst_t {
+struct sArgsRange_t {
+    ap_fixed_64p32 min;
     ap_fixed_64p32 max;
-    uint64_t max_mask; // Mask for PRNG
+};
+
+struct sParticleCfg_t {
     ap_fixed_32p16 inertia;
     ap_fixed_32p16 personal_weight;
     ap_fixed_32p16 global_weight;
@@ -47,9 +50,9 @@ uint64_t xorshift64() {
     RNG64 ^= (RNG64 << 17);
     return RNG64;
 }
-ap_fixed_32p16 PRNG_64() {
-    ap_fixed_32p16 randomFloat = (xorshift64() & 0x7FFFFFFFFFFFFFFF);
-    randomFloat = randomFloat >> 63;
+ap_fixed_64p32 PRNG_64p32() {
+    ap_fixed_64p32 randomFloat;
+    randomFloat.range(63, 0) = (xorshift64() & 0xFFFFFFFF);
     return randomFloat;
 }
 ap_fixed_64p32 PRNG_64p32(const uint64_t &max_mask) {

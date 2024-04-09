@@ -6,8 +6,6 @@
 /* DEFINES */
 /* ================================================================= */
 #define PSO_DIMENSION ARGS_SIZE
-#define DECIMAL_PART_64P32 0xFFFFFFFF
-#define WHOLE_PART_64P32(x) (((x) << 32) | DECIMAL_PART_64P32)
 
 struct sParticle_t {
     /* Position == ModelArgs */
@@ -20,28 +18,28 @@ struct sParticle_t {
 };
 
 /* ================================================================= */
-/* Constants */
-/* ================================================================= */
-static const ap_fixed_32p16 PI_x_2 = 6.28318530717958647692;
-
-/* ================================================================= */
 /* Global variables */
 /* ================================================================= */
 static sParticle_t swarm[PSO_SWARM_SIZE];
 static sParticle_t global_best;
 static sModelParams params;
-static ap_fixed_32p16 args_original[ARGS_SIZE];
 
-/* max_mask = INT part + FFFFFFFF float part */
-static const sArgConst_t args_const_lut[ARGS_SIZE] = {
-/*   max,               max_mask,   inert,  pers,   glb     ARG     */
-/*     DECIMAL PART -> |FFFFFFFF|                                   */
-    {100,           0x7FFFFFFFFF,   0.1,      1,      1}, /*  alfa0   */
-    {10000000,  0x7FFFFFFFFFFFFF,   0.1,      1,      1}, /*  freq0   */
-    {2000,         0x7FFFFFFFFFF,   0.1,      1,      1}, /*  c2      */
-    {10,             0xFFFFFFFFF,   0.1,      1,      1}, /*  n       */
-    {2000,         0x7FFFFFFFFFF,   0.1,      1,      1}, /*  ro2     */
-    {1,               0xFFFFFFFF,   0.1,      1,      1}  /*  h       */
+static const sArgsRange_t args_range[ARGS_SIZE] = {
+    {15     , 20    }, /* alfa0 */
+    {0.25e6 , 1e6   }, /* freq0 */
+    {880    , 1280  }, /* c2    */
+    {1      , 2.5   }, /* n     */
+    {924    , 1324  }, /* ro2   */
+    {0.0005 , 0.0020}  /* h     */
+};
+
+static const sParticleCfg_t particle_cfg[ARGS_SIZE] = {
+    {0.1, 1, 1}, /* alfa0   */
+    {0.1, 1, 1}, /* freq0   */
+    {0.1, 1, 1}, /* c2      */
+    {0.1, 1, 1}, /* n       */
+    {0.1, 1, 1}, /* ro2     */
+    {0.1, 1, 1}  /* h       */
 };
 
 /* ================================================================= */
@@ -88,7 +86,12 @@ static void pso_swarm_init(const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
     /* Initiate swarm values */
     for (int i = 0; i < PSO_SWARM_SIZE; i++) {
         for (int j = 0; j < PSO_DIMENSION; j++) {
-            swarm[i].position[j] = PRNG_64p32(args_const_lut[j].max_mask);
+#pragma HLS pipeline
+            ap_fixed_64p32 rand_val =
+                args_range[j].min +
+                PRNG_64p32() * (args_range[j].max - args_range[j].min);
+            // printf("rand_val = %f\n", (double)rand_val);
+            swarm[i].position[j] = rand_val;
             swarm[i].position_best[j] = swarm[i].position[j];
             swarm[i].velocity[j] = 0;
         }
@@ -105,14 +108,12 @@ static void pso_update_velocity(sParticle_t &swarm) {
     ap_fixed_64p32 vel_interia, vel_personal, vel_global;
     for (int j = 0; j < PSO_DIMENSION; j++) {
 #pragma HLS pipeline
-        rand_val_1 = PRNG_64p32(DECIMAL_PART_64P32);
-        rand_val_2 = PRNG_64p32(DECIMAL_PART_64P32);
-        // printf("rand_val[%d]: %f, rand_val[%d]: %f\n", 2 * j,
-        // (double)rand_val[2 * j], 2 * j + 1, (double)rand_val[2 * j + 1]);
-        vel_interia = args_const_lut[j].inertia * swarm.velocity[j];
-        vel_personal = args_const_lut[j].personal_weight * rand_val_1 *
+        rand_val_1 = PRNG_64p32();
+        rand_val_2 = PRNG_64p32();
+        vel_interia = particle_cfg[j].inertia * swarm.velocity[j];
+        vel_personal = particle_cfg[j].personal_weight * rand_val_1 *
                        (swarm.position_best[j] - swarm.position[j]);
-        vel_global = args_const_lut[j].global_weight * rand_val_2 *
+        vel_global = particle_cfg[j].global_weight * rand_val_2 *
                      (global_best.position[j] - swarm.position[j]);
         swarm.velocity[j] = vel_interia + vel_personal + vel_global;
     }
@@ -123,13 +124,6 @@ static void pso_update_position(sParticle_t &swarm) {
     for (int j = 0; j < PSO_DIMENSION; j++) {
 #pragma HLS pipeline
         new_position = swarm.position[j] + swarm.velocity[j];
-        if (new_position > args_const_lut[j].max) {
-            new_position = args_const_lut[j].max;
-            swarm.velocity[j] = 0;
-        } else if (new_position < 0) {
-            new_position = 0;
-            swarm.velocity[j] = 0;
-        }
         swarm.position[j] = new_position;
     }
 }
@@ -186,7 +180,6 @@ static void pso_find_global_best(void) {
 /* ================================================================= */
 
 void pso_process(ap_fixed_64p32 args_estimate[ARGS_SIZE],
-                 const ap_fixed_64p32 args_original_ref[ARGS_SIZE],
                  const sModelParams &params_ref,
                  const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
                  const ap_fixed_32p16 ref_signal[TRANSFER_FUNC_SIZE],
@@ -194,9 +187,6 @@ void pso_process(ap_fixed_64p32 args_estimate[ARGS_SIZE],
 
     /* Copy input arguments */
     params = params_ref;
-    for (int i = 0; i < ARGS_SIZE; i++) {
-        args_original[i] = args_original_ref[i];
-    }
 
 /* swarm */
 #pragma HLS array_partition variable = swarm->position complete
