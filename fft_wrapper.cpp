@@ -11,6 +11,7 @@ static const uint32_t output_shift = (fft_input_t::iwidth - 8); // Same as multi
 void FFT_input_to_complex(fft_input_t in[FFT_LENGTH], fft_complex_t out[FFT_LENGTH]) {
 	fft_input_t temp_normalised = 0;
 	for (int i = 0; i < FFT_LENGTH; i++) {
+#pragma HLS pipeline
         temp_normalised = in[i] >> FFT_NFFT_MAX + 1;
 		out[i] = fft_complex_t(temp_normalised, 0);
 	}
@@ -22,6 +23,7 @@ void FFT_output_to_complex(fft_output_t in[FFT_LENGTH], fft_complex_t out[FFT_LE
 	fft_input_t temp_real = 0;
 	fft_input_t temp_imag = 0;
 	for (int i = 0; i < FFT_LENGTH; i++) {
+#pragma HLS pipeline
 		temp_real = in[i].real();
         temp_real = temp_real >> FFT_NFFT_MAX - 2;
 		temp_imag = in[i].imag();
@@ -37,6 +39,7 @@ void FFT_complex_to_input(fft_complex_t in[FFT_LENGTH], fft_input_t out[FFT_LENG
 	fft_complex_t temp_complex;
 	fft_input_t temp_normalised;
 	for (int i = 0; i < FFT_LENGTH; i++) {
+#pragma HLS pipeline
 		temp_complex = in[i];
 		temp_normalised = temp_complex.real();
 		temp_normalised = temp_normalised << FFT_NFFT_MAX - 1;
@@ -52,6 +55,7 @@ void FFT_complex_to_output(fft_complex_t in[FFT_LENGTH], fft_output_t out[FFT_LE
     fft_input_t temp_real;
     fft_input_t temp_imag;
 	for (int i = 0; i < FFT_LENGTH; i++) {
+#pragma HLS pipeline
 		temp_complex = in[i];
 		temp_real = temp_complex.real();
 		temp_real = temp_real << (2 * FFT_NFFT_MAX + 2);
