@@ -53,29 +53,29 @@ ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
     /* Add your code here */
     ap_fixed_64p32 fitness = 0;
     /* TEST */
-    fitness = args[0] + args[1] + args[2] + args[3] + args[4] + args[5];
+//     fitness = args[0] + args[1] + args[2] + args[3] + args[4] + args[5];
 
     /* Call the model */
-    // sModelArgs model_args = {args[0], args[1], args[2], args[3], args[4], args[5]};
-    // ap_fixed_32p16 wave_result[TRANSFER_FUNC_SIZE];
-    // WaveSynthesis(model_args, params, ref_signal, freq_axis, wave_result);
+    sModelArgs model_args = {args[0], args[1], args[2], args[3], args[4], args[5]};
+    ap_fixed_32p16 wave_result[TRANSFER_FUNC_SIZE];
+    WaveSynthesis(model_args, params, ref_signal, freq_axis, wave_result);
 
-    // /* Calculate fitness */
-    // ap_fixed_64p32 diff;
-    // ap_fixed_64p32 numerator = 0;
-    // ap_fixed_64p32 denominator = 0;
-    // for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
-    //     diff = wave_result[i] - meas_signal[i];
-    //     numerator += diff * diff;
-    //     denominator += meas_signal[i] * meas_signal[i];
-    //     // printf(" %-10f += %-10f ^ 2\n", (double)denominator, (double)ref_signal[i]);
-    // }
-    // if (denominator == 0) {
-    //     fitness = 999999;
-    // } else {
-    //     fitness = numerator / denominator;
-    //     // printf(" %-10f / %-10f = %-10f\n", (double)numerator, (double)denominator, (double)fitness);
-    // }
+    /* Calculate fitness */
+    ap_fixed_64p32 diff;
+    ap_fixed_64p32 numerator = 0;
+    ap_fixed_64p32 denominator = 0;
+    for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
+        diff = wave_result[i] - meas_signal[i];
+        numerator += diff * diff;
+        denominator += meas_signal[i] * meas_signal[i];
+        // printf(" %-10f += %-10f ^ 2\n", (double)denominator, (double)ref_signal[i]);
+    }
+    if (denominator == 0) {
+        fitness = 999999;
+    } else {
+        fitness = numerator / denominator;
+        // printf(" %-10f / %-10f = %-10f\n", (double)numerator, (double)denominator, (double)fitness);
+    }
     return fitness;
 }
 
