@@ -2,8 +2,8 @@
 
 #include "common_defs.hpp"
 
-#define PSO_ITERATIONS 100
-#define PSO_SWARM_SIZE 100
+#define PSO_ITERATIONS 400 // 400 default
+#define PSO_SWARM_SIZE 400 // 400 default
 
 void pso_process(ap_fixed_64p32 args_estimate[ARGS_SIZE],
                  const sModelParams &params_ref,
